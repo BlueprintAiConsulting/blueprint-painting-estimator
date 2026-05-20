@@ -7,7 +7,7 @@ export default defineConfig(({ command }) => {
   const isProd = command === 'build';
 
   return {
-    base: isProd ? '/blueprint-interior-visualizer/' : '/',
+    base: isProd ? '/blueprint-painting-estimator/' : '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
