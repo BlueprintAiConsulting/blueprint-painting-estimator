@@ -35,7 +35,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (ai.isQuickGenerating) {
-      setElapsedSecs(0);
       timerRef.current = setInterval(() => setElapsedSecs(s => s + 1), 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -109,6 +108,7 @@ const App: React.FC = () => {
     if (enabledZones.length === 0) return;
 
     ai.setIsQuickGenerating(true);
+    setElapsedSecs(0);
     ai.setError(null);
     setRenderPhase('painting');
 
@@ -150,8 +150,9 @@ const App: React.FC = () => {
         setDetectedDimensions(data.estimatedDimensions);
       }
       setShowEstimator(true);
-    } catch (err: any) {
-      ai.setError(ai.friendlyError(err.message || 'Generation failed.'));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      ai.setError(ai.friendlyError(msg || 'Generation failed.'));
     } finally {
       ai.setIsQuickGenerating(false);
       setTimeout(() => setRenderPhase('idle'), 3000);
@@ -306,7 +307,7 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      <Footer onShowToS={() => {}} onShowPrivacy={() => {}} />
+      <Footer />
     </div>
   );
 };

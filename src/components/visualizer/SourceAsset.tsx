@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Upload, Camera, X, Sparkles, Loader2 } from 'lucide-react';
+import { Upload, Camera, Sparkles, Loader2 } from 'lucide-react';
 
 interface SourceAssetProps {
   selectedImage: string | null;

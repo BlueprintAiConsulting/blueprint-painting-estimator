@@ -92,7 +92,6 @@ const InteriorCatalog: React.FC<InteriorCatalogProps> = ({
                 {availableLines.length > 1 && (
                   <div className="flex gap-1 flex-wrap">
                     {availableLines.map((line) => {
-                      const badge = getTierBadge(line);
                       return (
                         <button key={line.id}
                           onClick={() => setZones(prev => prev.map(z =>

@@ -1,17 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import './index.css';
 
 // Hide splash screen once React mounts
-const splash = document.getElementById('splash-screen');
+const splash = document.getElementById('splash');
 if (splash) {
-  setTimeout(() => splash.classList.add('hidden'), 800);
   setTimeout(() => splash.remove(), 1400);
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>
 );

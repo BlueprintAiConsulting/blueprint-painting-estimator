@@ -31,9 +31,9 @@ export function calculatePaintEstimate(
     }
 
     let gallonsNeeded = Math.ceil((areaSqFt * defaultCoats) / coverageSqFtPerGallon);
-    let pricePerGallon = (gallonPrices[zone.selectedLine.id] || 76) * paintMarkup;
+    const pricePerGallon = (gallonPrices[zone.selectedLine.id] || 76) * paintMarkup;
     let paintCost = gallonsNeeded * pricePerGallon;
-    let laborRate = laborPerSqFt[zone.category] || laborPerSqFt.walls;
+    const laborRate = laborPerSqFt[zone.category] || laborPerSqFt.walls;
     let laborCost = areaSqFt * laborRate;
 
     if (zone.category === 'cabinets') {

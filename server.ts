@@ -200,7 +200,7 @@ Return ONLY valid JSON - no markdown, no code fences:
     const rawText = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const cleaned = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
-    let parsed: any;
+    let parsed: Record<string, unknown>;
     try {
       const firstBrace = cleaned.indexOf('{');
       const lastBrace = cleaned.lastIndexOf('}');
@@ -221,9 +221,9 @@ Return ONLY valid JSON - no markdown, no code fences:
       zones: parsed.zones || [],
       optionalZones: parsed.optionalZones || [],
     });
-  } catch (err: any) {
-    console.error('[detect-room] error:', err?.message);
-    res.status(500).json({ error: err?.message || 'Room detection failed.' });
+  } catch (err: unknown) {
+    console.error('[detect-room] error:', (err instanceof Error ? err.message : String(err)));
+    res.status(500).json({ error: (err instanceof Error ? err.message : String(err)) || 'Room detection failed.' });
   }
 });
 
@@ -342,13 +342,13 @@ ${passConfig.textureInstructions}
     }
     if (!resultImage) return res.status(500).json({ error: `AI did not return an image for ${renderPass} pass. Please try again.` });
     res.json({ resultImage });
-  } catch (err: any) {
-    console.error(`[interior-render-${renderPass}] error:`, err?.message);
-    const msg = (err?.message || '').toLowerCase();
+  } catch (err: unknown) {
+    console.error(`[interior-render-${renderPass}] error:`, (err instanceof Error ? err.message : String(err)));
+    const msg = ((err instanceof Error ? err.message : String(err)) || '').toLowerCase();
     let errorMessage = `${renderPass} render failed. Please try again.`;
     if (msg.includes('quota')) errorMessage = 'API quota exceeded.';
     else if (msg.includes('safety')) errorMessage = 'Image flagged by safety filters.';
-    else if (err?.message) errorMessage = `Generation failed: ${err.message}`;
+    else if ((err instanceof Error ? err.message : String(err))) errorMessage = `Generation failed: ${err.message}`;
     res.status(500).json({ error: errorMessage });
   }
 });
@@ -398,13 +398,13 @@ app.post('/api/interior-quick-render', generationLimiter, async (req, res) => {
     }
     if (!resultImage) return res.status(500).json({ error: 'AI did not return an image. Please try again.' });
     res.json({ resultImage });
-  } catch (err: any) {
-    console.error('[interior-quick-render] error:', err?.message);
-    const msg = (err?.message || '').toLowerCase();
+  } catch (err: unknown) {
+    console.error('[interior-quick-render] error:', (err instanceof Error ? err.message : String(err)));
+    const msg = ((err instanceof Error ? err.message : String(err)) || '').toLowerCase();
     let errorMessage = 'Quick render failed. Please try again.';
     if (msg.includes('quota')) errorMessage = 'API quota exceeded.';
     else if (msg.includes('safety')) errorMessage = 'Image flagged by safety filters.';
-    else if (err?.message) errorMessage = `Generation failed: ${err.message}`;
+    else if ((err instanceof Error ? err.message : String(err))) errorMessage = `Generation failed: ${err.message}`;
     res.status(500).json({ error: errorMessage });
   }
 });
@@ -501,13 +501,13 @@ app.post('/api/paint-visualize', generationLimiter, async (req, res) => {
     if (!resultImage) return res.status(500).json({ error: 'AI did not return an image. Please try again.' });
     
     res.json({ resultImage, estimatedDimensions });
-  } catch (err: any) {
-    console.error('[paint-visualize] error:', err?.message);
-    const msg = (err?.message || '').toLowerCase();
+  } catch (err: unknown) {
+    console.error('[paint-visualize] error:', (err instanceof Error ? err.message : String(err)));
+    const msg = ((err instanceof Error ? err.message : String(err)) || '').toLowerCase();
     let errorMessage = 'Paint visualization failed. Please try again.';
     if (msg.includes('quota')) errorMessage = 'API quota exceeded.';
     else if (msg.includes('safety')) errorMessage = 'Image flagged by safety filters.';
-    else if (err?.message) errorMessage = `Generation failed: ${err.message}`;
+    else if ((err instanceof Error ? err.message : String(err))) errorMessage = `Generation failed: ${err.message}`;
     res.status(500).json({ error: errorMessage });
   }
 });
@@ -560,9 +560,9 @@ CRITICAL RULES:
 
     if (!maskBase64) return res.status(500).json({ error: 'No mask was generated.' });
     res.json({ maskBase64 });
-  } catch (err: any) {
-    console.error('[auto-mask] error:', err?.message);
-    res.status(500).json({ error: err?.message || 'Auto-mask generation failed.' });
+  } catch (err: unknown) {
+    console.error('[auto-mask] error:', (err instanceof Error ? err.message : String(err)));
+    res.status(500).json({ error: (err instanceof Error ? err.message : String(err)) || 'Auto-mask generation failed.' });
   }
 });
 
@@ -621,11 +621,14 @@ Output a single photorealistic, clean, well-lit interior room photo optimized fo
     let outMime = 'image/png';
 
     for (const part of parts) {
-      if ((part as any).inlineData?.data) {
-        const id = (part as any).inlineData;
-        enhancedBase64 = id.data;
-        outMime = id.mimeType ?? 'image/png';
-        break;
+      const partRecord = part as Record<string, unknown>;
+      if (partRecord.inlineData) {
+        const id = partRecord.inlineData as Record<string, string>;
+        if (id.data) {
+          enhancedBase64 = id.data;
+          outMime = id.mimeType ?? 'image/png';
+          break;
+        }
       }
     }
 
@@ -722,7 +725,7 @@ app.post('/api/quote-request', standardLimiter, async (req, res) => {
 </div></body></html>`,
       attachments,
     }).then(() => console.log(`[quote-request] Lead email sent for ${email}`))
-      .catch((err: any) => console.error('[quote-request] Email error:', err?.message));
+      .catch((err: unknown) => console.error('[quote-request] Email error:', (err instanceof Error ? err.message : String(err))));
   }
 });
 

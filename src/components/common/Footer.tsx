@@ -1,12 +1,7 @@
 import React from 'react';
 import { BRAND } from '../../constants/branding';
 
-interface FooterProps {
-  onShowToS: () => void;
-  onShowPrivacy: () => void;
-}
-
-const Footer: React.FC<FooterProps> = ({ onShowToS, onShowPrivacy }) => {
+const Footer: React.FC = () => {
   return (
     <footer className="border-t border-[#1E293B] bg-[#060B18] py-6 mt-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">

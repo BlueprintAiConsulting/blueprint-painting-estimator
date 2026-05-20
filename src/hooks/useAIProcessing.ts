@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { API_BASE } from '../utils/apiConfig';
+
 
 export function useAIProcessing() {
   const [isProcessing, setIsProcessing] = useState(false);
