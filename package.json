@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "start-server": "tsx server.ts",
+    "start": "tsx server.ts",
     "dev:all": "npm-run-all --parallel dev start-server",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
