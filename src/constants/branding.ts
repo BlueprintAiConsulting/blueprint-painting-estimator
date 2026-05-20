@@ -9,5 +9,5 @@ export const BRAND: BrandConfig = {
   presenter: 'Fishers Painting',
   primaryColor: '#3B82F6',
   logoUrl: '/logo.png',
-  accentGradient: 'linear-gradient(135deg, #3B82F6, #10B981, #EF4444)',
+  accentGradient: 'linear-gradient(135deg, #3B82F6, #10B981)',
 };

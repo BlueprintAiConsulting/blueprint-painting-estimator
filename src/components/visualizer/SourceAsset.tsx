@@ -61,10 +61,10 @@ const SourceAsset: React.FC<SourceAssetProps> = ({
               <p className="text-[10px] text-[#64748B] mb-2 font-bold uppercase tracking-wider">Try a Sample Room</p>
               <div className="grid grid-cols-4 gap-2">
                 {[
-                  { name: 'Kitchen', url: '/samples/kitchen.png' },
-                  { name: 'Bathroom', url: '/samples/bathroom.png' },
-                  { name: 'Living Room', url: '/samples/living_room.png' },
-                  { name: 'Bedroom', url: '/samples/bedroom.png' }
+                  { name: 'Kitchen', url: `${import.meta.env.BASE_URL}samples/kitchen.png` },
+                  { name: 'Bathroom', url: `${import.meta.env.BASE_URL}samples/bathroom.png` },
+                  { name: 'Living Room', url: `${import.meta.env.BASE_URL}samples/living_room.png` },
+                  { name: 'Bedroom', url: `${import.meta.env.BASE_URL}samples/bedroom.png` }
                 ].map((sample) => (
                   <button
                     key={sample.name}
