@@ -11,7 +11,14 @@ interface PaintEstimatorProps {
 }
 
 const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, initialDimensions }) => {
-  const [dimensions, setDimensions] = useState<RoomDimensions>(initialDimensions || {
+  const [dimensions, setDimensions] = useState<RoomDimensions>(initialDimensions ? {
+    length: Number(initialDimensions.length) || 12,
+    width: Number(initialDimensions.width) || 12,
+    height: Number(initialDimensions.height) || 8,
+    doors: 1,
+    windows: 2,
+    cabinets: 15,
+  } : {
     length: 12, width: 14, height: 8, doors: 1, windows: 2, cabinets: 15,
   });
   const [showBreakdown, setShowBreakdown] = useState(false);
