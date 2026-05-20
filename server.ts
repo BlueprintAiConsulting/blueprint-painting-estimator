@@ -749,7 +749,7 @@ if (!gmailTransport) console.warn('⚠️  GMAIL_USER/GMAIL_APP_PASSWORD not set
 // ---------------------------------------------------------------------------
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'dist')));
-  app.get('*', (_req, response) => {
+  app.use((_req, response) => {
     response.sendFile(path.join(__dirname, 'dist', 'index.html'));
   });
 }
