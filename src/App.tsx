@@ -28,6 +28,7 @@ const App: React.FC = () => {
   const [swatchPreviewHex, setSwatchPreviewHex] = useState<string | null>(null);
   const [swatchPreviewName, setSwatchPreviewName] = useState<string | null>(null);
   const [showEstimator, setShowEstimator] = useState(false);
+  const [detectedDimensions, setDetectedDimensions] = useState<RoomDimensions | null>(null);
 
   const ai = useAIProcessing();
   const timerRef = useRef<number | null>(null);
@@ -145,6 +146,9 @@ const App: React.FC = () => {
 
       setRenderPhase('done');
       setResultImage(data.resultImage);
+      if (data.estimatedDimensions) {
+        setDetectedDimensions(data.estimatedDimensions);
+      }
       setShowEstimator(true);
     } catch (err: any) {
       ai.setError(ai.friendlyError(err.message || 'Generation failed.'));
@@ -157,7 +161,7 @@ const App: React.FC = () => {
   const handleRequestQuote = (estimate: PaintEstimateResult, dimensions: RoomDimensions) => {
     // TODO: Open quote request modal / send to server
     console.log('Quote requested:', { estimate, dimensions, roomType, zones: zones.filter(z => z.enabled) });
-    alert(`Quote request submitted!\n\nEstimated Total: $${estimate.totalEstimate.toLocaleString()}\n${estimate.totalGallons} gallons · ${estimate.coats} coats\n\nBlueprint Painting will contact you shortly.`);
+    alert(`Quote request submitted!\n\nEstimated Total: $${estimate.totalEstimate.toLocaleString()}\n${estimate.totalGallons} gallons · ${estimate.coats} coats\n\nFishers Painting will contact you shortly.`);
   };
 
   return (
@@ -201,8 +205,8 @@ const App: React.FC = () => {
             {/* Paint Color Selection */}
             <div className="rounded-xl border border-[#1E293B] overflow-hidden">
               <div className="px-5 py-3.5 bg-[#111827] border-b border-[#1E293B] flex items-center gap-3">
-                <div className="w-7 h-7 bg-[#7C3AED]/20 rounded-lg flex items-center justify-center">
-                  <Paintbrush className="w-4 h-4 text-[#A78BFA]" />
+                <div className="w-7 h-7 bg-[#3B82F6]/20 rounded-lg flex items-center justify-center">
+                  <Paintbrush className="w-4 h-4 text-[#10B981]" />
                 </div>
                 <h2 className="text-xs font-bold uppercase tracking-wider text-[#E2E8F0]">
                   Sherwin-Williams Colors
@@ -250,8 +254,8 @@ const App: React.FC = () => {
                   ai.isQuickGenerating || !selectedImage || !zones.some(z => z.enabled)
                     ? 'bg-[#1E293B] text-[#64748B] cursor-not-allowed border border-[#334155]'
                     : resultImage
-                      ? 'bg-[#6D28D9] hover:bg-[#5B21B6] text-white shadow-[0_0_20px_rgba(124,58,237,0.4)]'
-                      : 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white shadow-[0_0_20px_rgba(124,58,237,0.35)]'
+                      ? 'bg-[#10B981] hover:bg-[#059669] text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                      : 'bg-[#3B82F6] hover:bg-[#2563EB] text-white shadow-[0_0_20px_rgba(59,130,246,0.35)]'
                 }`}
               >
                 {ai.isQuickGenerating
@@ -264,7 +268,11 @@ const App: React.FC = () => {
 
             {/* Estimator — appears after visualization */}
             {showEstimator && resultImage && (
-              <PaintEstimator zones={zones} onRequestQuote={handleRequestQuote} />
+              <PaintEstimator 
+                zones={zones} 
+                onRequestQuote={handleRequestQuote} 
+                initialDimensions={detectedDimensions || undefined} 
+              />
             )}
           </div>
 
@@ -273,7 +281,7 @@ const App: React.FC = () => {
             <div className="bg-[#111827] rounded-xl border border-[#1E293B] p-1 flex flex-col shadow-2xl overflow-hidden" style={{ height: 'min(calc(100vh - 100px), 900px)', minHeight: '320px' }}>
               <div className="bg-[#0F172A] border-b border-[#1E293B] px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#7C3AED] animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
                   <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Paint Preview</span>
                 </div>
                 <span className="text-[9px] text-[#475569]">

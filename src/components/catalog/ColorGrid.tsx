@@ -18,7 +18,7 @@ const ColorGrid: React.FC<ColorGridProps> = ({
   onMouseEnter,
   onMouseLeave,
   isExpanded,
-  ringColor = '#3B82F6',
+  ringColor = '#10B981',
 }) => {
   if (!isExpanded) return null;
 

@@ -1,13 +1,13 @@
 import { BrandConfig } from '../types';
 
 /**
- * Blueprint Painting Estimator — White-label brand configuration.
+ * Fishers Painting Estimator — White-label brand configuration.
  */
 export const BRAND: BrandConfig = {
-  name: 'Blueprint Painting Estimator',
+  name: 'Fishers Painting Estimator',
   tagline: 'See Your Colors Before You Paint',
-  presenter: 'Blueprint AI Consulting',
-  primaryColor: '#7C3AED',
+  presenter: 'Fishers Painting',
+  primaryColor: '#3B82F6',
   logoUrl: '/logo.png',
-  accentGradient: 'linear-gradient(135deg, #7C3AED, #A78BFA, #60A5FA)',
+  accentGradient: 'linear-gradient(135deg, #3B82F6, #10B981, #EF4444)',
 };

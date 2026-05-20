@@ -7,14 +7,15 @@ import { PRICING } from '../../constants/pricingConfig';
 interface PaintEstimatorProps {
   zones: RoomZone[];
   onRequestQuote: (estimate: PaintEstimateResult, dimensions: RoomDimensions) => void;
+  initialDimensions?: RoomDimensions;
 }
 
-const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote }) => {
-  const [dimensions, setDimensions] = useState<RoomDimensions>({
+const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, initialDimensions }) => {
+  const [dimensions, setDimensions] = useState<RoomDimensions>(initialDimensions || {
     length: 12, width: 14, height: 8, doors: 1, windows: 2, cabinets: 15,
   });
   const [showBreakdown, setShowBreakdown] = useState(false);
-  const [activePreset, setActivePreset] = useState<number>(1);
+  const [activePreset, setActivePreset] = useState<number>(initialDimensions ? -1 : 1);
 
   const estimate = useMemo(
     () => calculatePaintEstimate(zones, dimensions),
@@ -111,7 +112,7 @@ const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote }
         )}
 
         {/* Estimate Total */}
-        <div className="bg-gradient-to-br from-[#7C3AED]/10 to-[#3B82F6]/10 border border-[#7C3AED]/30 rounded-xl p-4">
+        <div className="bg-gradient-to-br from-[#3B82F6]/10 to-[#10B981]/10 border border-[#3B82F6]/30 rounded-xl p-4">
           <div className="flex items-baseline justify-between mb-1">
             <span className="text-[9px] text-[#A78BFA] uppercase tracking-widest font-bold">Estimated Total</span>
             <span className="text-[9px] text-[#64748B]">{estimate.coats} coats · {estimate.totalGallons} gal</span>

@@ -107,7 +107,7 @@ const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
               <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 rounded text-[9px] font-bold text-white/80 uppercase tracking-wider backdrop-blur-sm">
                 Before
               </div>
-              <div className="absolute top-3 right-3 px-2 py-1 bg-[#3B82F6]/80 rounded text-[9px] font-bold text-white uppercase tracking-wider backdrop-blur-sm">
+              <div className="absolute top-3 right-3 px-2 py-1 bg-[#10B981]/80 rounded text-[9px] font-bold text-white uppercase tracking-wider backdrop-blur-sm">
                 After
               </div>
             </>

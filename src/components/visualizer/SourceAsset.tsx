@@ -38,24 +38,60 @@ const SourceAsset: React.FC<SourceAssetProps> = ({
       <div className="p-4">
         {!selectedImage ? (
           /* Upload area */
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-            className="border-2 border-dashed border-[#334155] hover:border-[#3B82F6]/50 rounded-xl p-8 text-center cursor-pointer transition-all group"
-          >
-            <Upload className="w-10 h-10 text-[#475569] group-hover:text-[#60A5FA] mx-auto mb-3 transition-colors" />
-            <p className="text-sm font-bold text-[#94A3B8] group-hover:text-[#E2E8F0] mb-1 transition-colors">
-              Upload Room Photo
-            </p>
-            <p className="text-[10px] text-[#475569]">
-              Drag & drop or click to browse
-            </p>
-            <p className="text-[9px] text-[#334155] mt-2">
-              JPG, PNG, WebP — max 20MB
-            </p>
+          <div className="space-y-4">
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+              className="border-2 border-dashed border-[#334155] hover:border-[#10B981]/50 rounded-xl p-8 text-center cursor-pointer transition-all group"
+            >
+              <Upload className="w-10 h-10 text-[#475569] group-hover:text-[#3B82F6] mx-auto mb-3 transition-colors" />
+              <p className="text-sm font-bold text-[#94A3B8] group-hover:text-[#E2E8F0] mb-1 transition-colors">
+                Upload Room Photo
+              </p>
+              <p className="text-[10px] text-[#475569]">
+                Drag & drop or click to browse
+              </p>
+              <p className="text-[9px] text-[#334155] mt-2">
+                JPG, PNG, WebP — max 20MB
+              </p>
+            </div>
+
+            <div className="pt-2 border-t border-[#1E293B]">
+              <p className="text-[10px] text-[#64748B] mb-2 font-bold uppercase tracking-wider">Try a Sample Room</p>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { name: 'Kitchen', url: '/samples/kitchen.png' },
+                  { name: 'Bathroom', url: '/samples/bathroom.png' },
+                  { name: 'Living Room', url: '/samples/living_room.png' },
+                  { name: 'Bedroom', url: '/samples/bedroom.png' }
+                ].map((sample) => (
+                  <button
+                    key={sample.name}
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(sample.url);
+                        const blob = await res.blob();
+                        const file = new File([blob], `${sample.name}.png`, { type: blob.type });
+                        onUpload(file);
+                      } catch (e) {
+                        console.error('Failed to load sample', e);
+                      }
+                    }}
+                    className="group relative rounded-lg overflow-hidden border border-[#334155] hover:border-[#10B981] transition-all aspect-video"
+                    title={`Try ${sample.name}`}
+                  >
+                    <img src={sample.url} alt={sample.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors flex items-end p-1">
+                      <span className="text-[8px] text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md">{sample.name}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
+
           /* Image loaded — thumbnail & enhance prompt */
           <div className="space-y-3">
             <div className="flex items-center gap-3">

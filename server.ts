@@ -1,5 +1,5 @@
 /**
- * Blueprint Painting — API Proxy Server
+ * Fishers Painting — API Proxy Server
  *
  * Holds the GEMINI_API_KEY server-side so it is never exposed in the
  * client bundle. The frontend calls /api/* and this server forwards the
@@ -32,7 +32,7 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -411,7 +411,7 @@ app.post('/api/interior-quick-render', generationLimiter, async (req, res) => {
 
 // ---------------------------------------------------------------------------
 // POST /api/paint-visualize
-// Single-pass paint-only visualization for Blueprint Painting.
+// Single-pass paint-only visualization for Fishers Painting.
 // Body: { imageBase64, mimeType, roomType, zones }
 // Returns: { resultImage: string }
 // ---------------------------------------------------------------------------
@@ -454,17 +454,53 @@ app.post('/api/paint-visualize', generationLimiter, async (req, res) => {
 6. EDGES: Clean, precise paint boundaries at corners, trim edges, and ceiling lines. No bleeding.
 7. PHOTOREALISM: The result must look like a real professional photograph of a freshly painted room.`;
 
-    const response = await withTimeout(ai.models.generateContent({
+    const vizPromise = withTimeout(ai.models.generateContent({
       model: 'gemini-3.1-flash-image-preview',
       contents: { parts: [{ inlineData: { data: imageBase64, mimeType: mimeType || 'image/jpeg' } }, { text: prompt }] },
     }), 90_000, 'paint-visualize');
+
+    const dimPromise = withTimeout(ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: { parts: [
+        { inlineData: { data: imageBase64, mimeType: mimeType || 'image/jpeg' } },
+        { text: 'Estimate the length, width, and height of this room in feet based on typical architectural proportions. Return JSON ONLY: { "length": 15, "width": 12, "height": 9 }' }
+      ] },
+    }), 15_000, 'dimension-extract').catch(e => {
+      console.error('[dimension-extract] warning:', e.message);
+      return null;
+    });
+
+    const [response, dimResponse] = await Promise.all([vizPromise, dimPromise]);
+
+    let estimatedDimensions = null;
+    if (dimResponse) {
+      try {
+        const rawText = dimResponse.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const cleaned = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        const firstBrace = cleaned.indexOf('{');
+        const lastBrace = cleaned.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1) {
+          const parsed = JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
+          if (parsed.length && parsed.width && parsed.height) {
+            estimatedDimensions = {
+              length: String(parsed.length),
+              width: String(parsed.width),
+              height: String(parsed.height)
+            };
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse dimensions:', e);
+      }
+    }
 
     let resultImage: string | null = null;
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) { resultImage = `data:image/png;base64,${part.inlineData.data}`; break; }
     }
     if (!resultImage) return res.status(500).json({ error: 'AI did not return an image. Please try again.' });
-    res.json({ resultImage });
+    
+    res.json({ resultImage, estimatedDimensions });
   } catch (err: any) {
     console.error('[paint-visualize] error:', err?.message);
     const msg = (err?.message || '').toLowerCase();
@@ -626,7 +662,7 @@ app.post('/api/quote-request', standardLimiter, async (req, res) => {
 
   // Email in background (if configured)
   if (gmailTransport) {
-    const FROM = `"Blueprint Painting Visualizer" <${process.env.GMAIL_USER}>`;
+    const FROM = `"Fishers Painting Visualizer" <${process.env.GMAIL_USER}>`;
     const leadRecipients = process.env.LEAD_EMAIL
       ? process.env.LEAD_EMAIL.split(',')
       : [];
@@ -681,7 +717,7 @@ app.post('/api/quote-request', standardLimiter, async (req, res) => {
     <table style="width:100%;border-collapse:collapse">${zonesHtml}</table>
   </div>
   <div style="background:#0F172A;padding:14px 28px;border-radius:0 0 12px 12px;text-align:center;color:#475569;font-size:11px">
-    <p style="margin:0">Submitted via Blueprint Painting · ${timestamp}</p>
+    <p style="margin:0">Submitted via Fishers Painting · ${timestamp}</p>
   </div>
 </div></body></html>`,
       attachments,
@@ -720,7 +756,7 @@ if (process.env.NODE_ENV === 'production') {
 
 function startServer(port: number, retries = 3) {
   const server = app.listen(port, () => {
-    console.log(`✅  Blueprint Painting API → http://localhost:${port}`);
+    console.log(`✅  Fishers Painting API → http://localhost:${port}`);
     const selfUrl = process.env.RENDER_EXTERNAL_URL;
     if (selfUrl) {
       setInterval(() => {
