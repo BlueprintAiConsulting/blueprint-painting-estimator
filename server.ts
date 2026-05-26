@@ -781,4 +781,8 @@ function startServer(port: number, retries = 3) {
   });
 }
 
-startServer(PORT);
+export { app };
+
+if (!process.env.NETLIFY) {
+  startServer(PORT);
+}
