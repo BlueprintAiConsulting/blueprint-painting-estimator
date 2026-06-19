@@ -27,6 +27,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'https://blueprint-interior-visualizer.onrender.com',
+  'https://blueprint-painting-estimator.onrender.com',
   'https://blueprintaiconsulting.github.io'
 ];
 
@@ -95,6 +96,8 @@ function validateImagePayload(base64: string, mime: string = '') {
 
   const roughSizeBytes = rawBase64.length * 0.75;
   if (roughSizeBytes > 20 * 1024 * 1024) throw new Error('Image exceeds 20MB safety limit');
+
+  return rawBase64;
 }
 
 // ---------------------------------------------------------------------------
@@ -104,7 +107,7 @@ function validateImagePayload(base64: string, mime: string = '') {
 // Returns: { isInteriorRoom: boolean, zones: [{name, category, maskTarget}] }
 // ---------------------------------------------------------------------------
 app.post('/api/detect-room', generationLimiter, async (req, res) => {
-  const { imageBase64, mimeType, roomType = 'kitchen' } = req.body as {
+  let { imageBase64, mimeType, roomType = 'kitchen' } = req.body as {
     imageBase64: string; mimeType: string; roomType: string;
   };
 
@@ -154,7 +157,7 @@ NEVER include: bed, furniture, lamps, curtains, bedding, art, personal items.`,
   const roomPrompt = ROOM_PROMPTS[roomType] || ROOM_PROMPTS['kitchen'];
 
   try {
-    validateImagePayload(imageBase64, mimeType);
+    imageBase64 = validateImagePayload(imageBase64, mimeType);
     const response = await withTimeout(ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: {
@@ -291,7 +294,7 @@ const PASS_CONFIGS: Record<string, {
 };
 
 app.post('/api/interior-render', generationLimiter, async (req, res) => {
-  const { imageBase64, mimeType, roomType, renderPass, zones } = req.body as {
+  let { imageBase64, mimeType, roomType, renderPass, zones } = req.body as {
     imageBase64: string; mimeType: string; roomType: string;
     renderPass: string; zones: InteriorZonePayload[];
   };
@@ -313,7 +316,7 @@ app.post('/api/interior-render', generationLimiter, async (req, res) => {
   }
 
   try {
-    validateImagePayload(imageBase64, mimeType);
+    imageBase64 = validateImagePayload(imageBase64, mimeType);
 
     let prompt = `You are a strict, precise interior material-replacement engine for a ${roomType} remodel visualization.\n\nApply ONLY these ${renderPass.toUpperCase()} changes:\n`;
     activeZones.forEach(z => {
@@ -360,14 +363,14 @@ ${passConfig.textureInstructions}
 // Returns: { resultImage: string }
 // ---------------------------------------------------------------------------
 app.post('/api/interior-quick-render', generationLimiter, async (req, res) => {
-  const { imageBase64, mimeType, roomType, zones } = req.body as {
+  let { imageBase64, mimeType, roomType, zones } = req.body as {
     imageBase64: string; mimeType: string; roomType: string;
     zones: InteriorZonePayload[];
   };
   if (!imageBase64 || !zones?.length) return res.status(400).json({ error: 'Missing imageBase64 or zones.' });
 
   try {
-    validateImagePayload(imageBase64, mimeType);
+    imageBase64 = validateImagePayload(imageBase64, mimeType);
 
     let prompt = `You are a strict, precise interior material-replacement engine. Apply ALL of the following remodel changes to this ${roomType} photograph:\n\n`;
     zones.forEach(z => {
@@ -428,14 +431,14 @@ interface PaintZonePayload {
 }
 
 app.post('/api/paint-visualize', generationLimiter, async (req, res) => {
-  const { imageBase64, mimeType, roomType, zones } = req.body as {
+  let { imageBase64, mimeType, roomType, zones } = req.body as {
     imageBase64: string; mimeType: string; roomType: string;
     zones: PaintZonePayload[];
   };
   if (!imageBase64 || !zones?.length) return res.status(400).json({ error: 'Missing imageBase64 or zones.' });
 
   try {
-    validateImagePayload(imageBase64, mimeType);
+    imageBase64 = validateImagePayload(imageBase64, mimeType);
 
     let prompt = `You are a precision interior PAINT visualization engine for a professional residential painting company using Sherwin-Williams paints.\n\nApply ONLY these paint color changes to this ${roomType} photograph:\n\n`;
     zones.forEach(z => {
@@ -516,7 +519,7 @@ app.post('/api/paint-visualize', generationLimiter, async (req, res) => {
 // POST /api/auto-mask  (adapted for interior surfaces)
 // ---------------------------------------------------------------------------
 app.post('/api/auto-mask', generationLimiter, async (req, res) => {
-  const { imageBase64, mimeType, maskTarget } = req.body as {
+  let { imageBase64, mimeType, maskTarget } = req.body as {
     imageBase64: string; mimeType: string; maskTarget: string;
   };
 
@@ -525,7 +528,7 @@ app.post('/api/auto-mask', generationLimiter, async (req, res) => {
   }
 
   try {
-    validateImagePayload(imageBase64, mimeType);
+    imageBase64 = validateImagePayload(imageBase64, mimeType);
     const allExclusions = ['appliances', 'refrigerator', 'stove', 'oven', 'microwave', 'dishwasher', 'sink', 'faucet', 'toilet', 'window glass', 'mirror glass', 'light fixtures', 'hardware', 'furniture', 'personal items', 'towels', 'plants', 'art'];
     const targetLower = maskTarget.toLowerCase();
     const activeExclusions = allExclusions.filter(e => !targetLower.includes(e));
@@ -570,14 +573,14 @@ CRITICAL RULES:
 // POST /api/enhance-image — AI Image Optimizer (reused from exterior)
 // ---------------------------------------------------------------------------
 app.post('/api/enhance-image', generationLimiter, async (req, res) => {
-  const { imageBase64, mimeType = 'image/jpeg' } = req.body as {
+  let { imageBase64, mimeType = 'image/jpeg' } = req.body as {
     imageBase64: string; mimeType?: string;
   };
 
   if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });
 
   try {
-    validateImagePayload(imageBase64, mimeType);
+    imageBase64 = validateImagePayload(imageBase64, mimeType);
     const response = await ai.models.generateContent({
       model: 'gemini-3.1-flash-image-preview',
       contents: [{

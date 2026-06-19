@@ -7,14 +7,24 @@ import { PRICING } from '../constants/pricingConfig';
 export function calculatePaintEstimate(
   zones: RoomZone[],
   dimensions: RoomDimensions,
+  exactWallPixels?: number,
+  pixelsPerFoot?: number
 ): PaintEstimateResult {
   const { length, width, height, doors, windows, cabinets = 0 } = dimensions;
   const { coverageSqFtPerGallon, defaultCoats, minimumJobCharge, paintMarkup, gallonPrices, laborPerSqFt, doorDeductionSqFt, windowDeductionSqFt } = PRICING;
 
   const enabledZones = zones.filter(z => z.enabled);
-  const totalWallArea = 2 * (length + width) * height;
   const deductions = (doors * doorDeductionSqFt) + (windows * windowDeductionSqFt);
-  const netWallArea = Math.max(0, totalWallArea - deductions);
+  
+  let netWallArea: number;
+  if (exactWallPixels && exactWallPixels > 0 && pixelsPerFoot && pixelsPerFoot > 0) {
+    const sqFt = exactWallPixels / (pixelsPerFoot * pixelsPerFoot);
+    netWallArea = Math.max(0, sqFt); // If we're using raw pixels from a mask, deductions might already be excluded (since windows/doors aren't painted). We'll assume the mask is perfect and not subtract standard deductions.
+  } else {
+    const totalWallArea = 2 * (length + width) * height;
+    netWallArea = Math.max(0, totalWallArea - deductions);
+  }
+
   const ceilingArea = length * width;
 
   const zoneEstimates = enabledZones.map(zone => {

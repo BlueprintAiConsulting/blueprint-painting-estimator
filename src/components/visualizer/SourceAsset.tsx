@@ -43,7 +43,7 @@ const SourceAsset: React.FC<SourceAssetProps> = ({
               onClick={() => fileInputRef.current?.click()}
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
-              className="border-2 border-dashed border-[#334155] hover:border-[#10B981]/50 rounded-xl p-8 text-center cursor-pointer transition-all group"
+              className="border-2 border-dashed border-[#334155] hover:border-[#3B82F6] hover:bg-[#1E293B]/50 rounded-xl p-8 text-center cursor-pointer transition-all duration-300 group hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:-translate-y-0.5"
             >
               <Upload className="w-10 h-10 text-[#475569] group-hover:text-[#3B82F6] mx-auto mb-3 transition-colors" />
               <p className="text-sm font-bold text-[#94A3B8] group-hover:text-[#E2E8F0] mb-1 transition-colors">
@@ -61,10 +61,10 @@ const SourceAsset: React.FC<SourceAssetProps> = ({
               <p className="text-[10px] text-[#64748B] mb-2 font-bold uppercase tracking-wider">Try a Sample Room</p>
               <div className="grid grid-cols-4 gap-2">
                 {[
-                  { name: 'Kitchen', url: `${import.meta.env.BASE_URL}samples/kitchen.png` },
-                  { name: 'Bathroom', url: `${import.meta.env.BASE_URL}samples/bathroom.png` },
-                  { name: 'Living Room', url: `${import.meta.env.BASE_URL}samples/living_room.png` },
-                  { name: 'Bedroom', url: `${import.meta.env.BASE_URL}samples/bedroom.png` }
+                  { name: 'Wide Living Room', url: `${import.meta.env.BASE_URL}samples/wide_living_room.png` },
+                  { name: 'Wide Kitchen', url: `${import.meta.env.BASE_URL}samples/wide_kitchen.png` },
+                  { name: 'Wide Bedroom', url: `${import.meta.env.BASE_URL}samples/wide_bedroom.png` },
+                  { name: 'Wide Dining Room', url: `${import.meta.env.BASE_URL}samples/wide_dining_room.png` }
                 ].map((sample) => (
                   <button
                     key={sample.name}

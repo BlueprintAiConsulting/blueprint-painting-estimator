@@ -8,9 +8,11 @@ interface PaintEstimatorProps {
   zones: RoomZone[];
   onRequestQuote: (estimate: PaintEstimateResult, dimensions: RoomDimensions) => void;
   initialDimensions?: RoomDimensions;
+  exactWallPixels?: number;
+  pixelsPerFoot?: number;
 }
 
-const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, initialDimensions }) => {
+const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, initialDimensions, exactWallPixels, pixelsPerFoot }) => {
   const [dimensions, setDimensions] = useState<RoomDimensions>(initialDimensions ? {
     length: Number(initialDimensions.length) || 12,
     width: Number(initialDimensions.width) || 12,
@@ -25,8 +27,8 @@ const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, 
   const [activePreset, setActivePreset] = useState<number>(initialDimensions ? -1 : 1);
 
   const estimate = useMemo(
-    () => calculatePaintEstimate(zones, dimensions),
-    [zones, dimensions]
+    () => calculatePaintEstimate(zones, dimensions, exactWallPixels, pixelsPerFoot),
+    [zones, dimensions, exactWallPixels, pixelsPerFoot]
   );
 
   const applyPreset = (idx: number) => {
@@ -45,10 +47,15 @@ const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, 
     <div className="rounded-xl border border-[#1E293B] bg-[#111827] overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2.5 px-5 py-3.5 bg-[#0F172A] border-b border-[#1E293B]">
-        <div className="w-7 h-7 bg-[#7C3AED]/20 rounded-lg flex items-center justify-center">
-          <Calculator className="w-4 h-4 text-[#A78BFA]" />
+        <div className="w-7 h-7 bg-[#3B82F6]/20 rounded-lg flex items-center justify-center">
+          <Calculator className="w-4 h-4 text-[#60A5FA]" />
         </div>
         <h2 className="text-xs font-bold uppercase tracking-wider text-[#E2E8F0]">Paint Estimate</h2>
+        {exactWallPixels && pixelsPerFoot && (
+          <span className="ml-auto px-2 py-0.5 bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 rounded text-[9px] font-bold uppercase tracking-wider">
+            Pixel Calibrated
+          </span>
+        )}
       </div>
 
       <div className="p-4 space-y-4">
@@ -60,7 +67,7 @@ const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, 
               <button key={i} onClick={() => applyPreset(i)}
                 className={`px-2 py-1.5 rounded text-[8px] font-bold uppercase tracking-wider transition-colors ${
                   activePreset === i
-                    ? 'bg-[#7C3AED]/20 text-[#A78BFA] border border-[#7C3AED]/40'
+                    ? 'bg-[#3B82F6]/20 text-[#60A5FA] border border-[#3B82F6]/40'
                     : 'bg-[#1E293B] text-[#64748B] hover:text-[#94A3B8] border border-transparent'
                 }`}
               >{p.label}</button>
@@ -81,7 +88,7 @@ const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, 
               </label>
               <input type="number" value={dimensions[key]} min={1} max={99}
                 onChange={e => updateDim(key, e.target.value)}
-                className="w-full bg-[#0A0E17] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:border-[#7C3AED] focus:outline-none transition-colors text-center"
+                className="w-full bg-[#0A0E17] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:border-[#3B82F6] focus:outline-none transition-colors text-center"
               />
             </div>
           ))}
@@ -98,7 +105,7 @@ const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, 
               </label>
               <input type="number" value={dimensions[key]} min={0} max={20}
                 onChange={e => updateDim(key, e.target.value)}
-                className="w-full bg-[#0A0E17] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:border-[#7C3AED] focus:outline-none transition-colors text-center"
+                className="w-full bg-[#0A0E17] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:border-[#3B82F6] focus:outline-none transition-colors text-center"
               />
             </div>
           ))}
@@ -112,16 +119,24 @@ const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, 
               </label>
               <input type="number" value={dimensions.cabinets || 0} min={0} max={100}
                 onChange={e => updateDim('cabinets', e.target.value)}
-                className="w-full bg-[#0A0E17] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:border-[#7C3AED] focus:outline-none transition-colors"
+                className="w-full bg-[#0A0E17] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:border-[#3B82F6] focus:outline-none transition-colors"
               />
             </div>
+          </div>
+        )}
+
+        {/* Show exact area if calibrated */}
+        {exactWallPixels && pixelsPerFoot && (
+          <div className="bg-[#1E293B] border border-[#334155] rounded-lg p-3 mt-2">
+            <p className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-wider mb-1">Pixel Measurement Active</p>
+            <p className="text-[11px] text-white">The wall square footage is being calculated precisely from the image pixels.</p>
           </div>
         )}
 
         {/* Estimate Total */}
         <div className="bg-gradient-to-br from-[#3B82F6]/10 to-[#10B981]/10 border border-[#3B82F6]/30 rounded-xl p-4">
           <div className="flex items-baseline justify-between mb-1">
-            <span className="text-[9px] text-[#A78BFA] uppercase tracking-widest font-bold">Estimated Total</span>
+            <span className="text-[9px] text-[#60A5FA] uppercase tracking-widest font-bold">Estimated Total</span>
             <span className="text-[9px] text-[#64748B]">{estimate.coats} coats · {estimate.totalGallons} gal</span>
           </div>
           <div className="text-3xl font-black text-white tracking-tight">
@@ -167,7 +182,7 @@ const PaintEstimator: React.FC<PaintEstimatorProps> = ({ zones, onRequestQuote, 
 
         {/* CTA */}
         <button onClick={() => onRequestQuote(estimate, dimensions)}
-          className="w-full py-3.5 rounded-lg font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9] shadow-[0_0_20px_rgba(124,58,237,0.3)] transition-all uppercase tracking-wider text-[11px] flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-lg font-bold text-white bg-[#3B82F6] hover:bg-[#2563EB] shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all uppercase tracking-wider text-[11px] flex items-center justify-center gap-2"
         >
           <Calculator className="w-4 h-4" />
           Request This Quote

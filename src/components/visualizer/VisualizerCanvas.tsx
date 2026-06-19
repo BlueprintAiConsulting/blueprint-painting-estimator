@@ -13,6 +13,8 @@ interface VisualizerCanvasProps {
   renderPhase: RenderPhase;
   swatchPreviewHex: string | null;
   swatchPreviewName: string | null;
+  pixelsPerFoot?: number | null;
+  setPixelsPerFoot?: (val: number | null) => void;
 }
 
 const PHASE_LABELS: Record<string, string> = {
@@ -31,14 +33,82 @@ const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
   renderPhase,
   swatchPreviewHex,
   swatchPreviewName,
+  pixelsPerFoot,
+  setPixelsPerFoot,
 }) => {
   const isGenerating = isProcessing || isQuickGenerating;
   const hasResult = !!resultImage;
+
+  // Calibration state
+  const [isCalibrating, setIsCalibrating] = React.useState(false);
+  const [pt1, setPt1] = React.useState<{x: number, y: number} | null>(null);
+  const [pt2, setPt2] = React.useState<{x: number, y: number} | null>(null);
+
+  const startCalibration = () => {
+    setIsCalibrating(true);
+    setPt1(null);
+    setPt2(null);
+  };
+
+  // Cancel calibration if window resizes (points become invalid)
+  React.useEffect(() => {
+    if (!isCalibrating) return;
+    const handleResize = () => {
+      setIsCalibrating(false);
+      setPt1(null);
+      setPt2(null);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isCalibrating]);
+
+  const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isCalibrating) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (!pt1) {
+      setPt1({ x, y });
+    } else if (!pt2) {
+      setPt2({ x, y });
+      
+      // We have both points, ask for distance
+      const distancePixels = Math.sqrt(Math.pow(x - pt1.x, 2) + Math.pow(y - pt1.y, 2));
+      
+      if (distancePixels < 10) {
+        alert("Line too short. Please draw a longer reference line.");
+        setPt1(null);
+        setPt2(null);
+        return;
+      }
+
+      setTimeout(() => {
+        const feetStr = window.prompt("Enter the length of this line in feet. Tip: Standard ceilings are usually 8 or 9 feet.", "8");
+        if (feetStr && !isNaN(Number(feetStr)) && Number(feetStr) > 0) {
+          const feet = Number(feetStr);
+          if (setPixelsPerFoot) {
+            setPixelsPerFoot(distancePixels / feet);
+          }
+        }
+        setIsCalibrating(false);
+        setPt1(null);
+        setPt2(null);
+      }, 50);
+    }
+  };
 
   const handleSliderMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!hasResult) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    setSliderPos(x * 100);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!hasResult || e.touches.length === 0) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, (e.touches[0].clientX - rect.left) / rect.width));
     setSliderPos(x * 100);
   };
 
@@ -61,8 +131,10 @@ const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
       {/* Image display - before/after slider */}
       {selectedImage && (
         <div
-          className="absolute inset-0 cursor-col-resize select-none"
-          onMouseMove={hasResult ? handleSliderMove : undefined}
+          className={`absolute inset-0 ${isCalibrating ? 'cursor-crosshair' : 'cursor-col-resize'} select-none`}
+          onMouseMove={(hasResult && !isCalibrating) ? handleSliderMove : undefined}
+          onTouchMove={(hasResult && !isCalibrating) ? handleTouchMove : undefined}
+          onClick={handleCanvasClick}
         >
           {/* Original image (full width) */}
           <img
@@ -101,8 +173,25 @@ const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
             </div>
           )}
 
+          {/* Calibration drawing overlay */}
+          {isCalibrating && (
+            <div className="absolute inset-0 z-20 pointer-events-none">
+              {pt1 && (
+                <div className="absolute w-3 h-3 rounded-full bg-blue-500 border-2 border-white -translate-x-1.5 -translate-y-1.5 shadow-[0_0_8px_rgba(59,130,246,0.8)]" style={{ left: pt1.x, top: pt1.y }} />
+              )}
+              {pt2 && (
+                <div className="absolute w-3 h-3 rounded-full bg-blue-500 border-2 border-white -translate-x-1.5 -translate-y-1.5 shadow-[0_0_8px_rgba(59,130,246,0.8)]" style={{ left: pt2.x, top: pt2.y }} />
+              )}
+              {pt1 && pt2 && (
+                <svg className="absolute inset-0 w-full h-full">
+                  <line x1={pt1.x} y1={pt1.y} x2={pt2.x} y2={pt2.y} stroke="#3B82F6" strokeWidth="2" strokeDasharray="4 4" />
+                </svg>
+              )}
+            </div>
+          )}
+
           {/* Before/After labels */}
-          {hasResult && (
+          {hasResult && !isCalibrating && (
             <>
               <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 rounded text-[9px] font-bold text-white/80 uppercase tracking-wider backdrop-blur-sm">
                 Before
@@ -112,6 +201,33 @@ const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
               </div>
             </>
           )}
+
+          {/* Calibration helper text */}
+          {isCalibrating && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-[#0F172A]/95 backdrop-blur-md border border-[#3B82F6] rounded-full shadow-2xl z-30">
+              <p className="text-[11px] font-bold text-white tracking-wide">
+                {!pt1 ? "Click the floor, then the ceiling (Standard ceilings are 8ft)" : "Click the second point"}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Set Scale Button */}
+      {hasResult && !isGenerating && (
+        <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
+          <button
+            onClick={isCalibrating ? () => setIsCalibrating(false) : startCalibration}
+            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-colors border shadow-md backdrop-blur-sm ${
+              isCalibrating 
+                ? 'bg-red-500/80 border-red-400 text-white hover:bg-red-600/80' 
+                : pixelsPerFoot
+                  ? 'bg-[#10B981]/80 border-[#059669] text-white hover:bg-[#059669]/90'
+                  : 'bg-[#1E293B]/80 border-[#334155] text-[#E2E8F0] hover:bg-[#334155]/90'
+            }`}
+          >
+            {isCalibrating ? 'Cancel' : pixelsPerFoot ? 'Scale Set' : 'Set Scale (Draw)'}
+          </button>
         </div>
       )}
 
@@ -137,7 +253,7 @@ const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
               </p>
             </div>
             <div className="w-48 h-1 bg-[#1E293B] rounded-full overflow-hidden mx-auto">
-              <div className="h-full bg-gradient-to-r from-[#5B21B6] to-[#7C3AED] rounded-full animate-pulse" style={{ width: '60%' }} />
+              <div className="h-full bg-gradient-to-r from-[#5B21B6] to-[#3B82F6] rounded-full animate-pulse" style={{ width: '60%' }} />
             </div>
           </div>
         </div>

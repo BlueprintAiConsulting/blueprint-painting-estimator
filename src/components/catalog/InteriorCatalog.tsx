@@ -46,7 +46,7 @@ const InteriorCatalog: React.FC<InteriorCatalogProps> = ({
         return (
           <div key={zone.id}
             className={`rounded-lg border overflow-hidden transition-all ${
-              zone.enabled ? 'border-[#7C3AED]/40 bg-[#0F172A]' : 'border-[#1E293B] bg-[#0A0E17]'
+              zone.enabled ? 'border-[#3B82F6]/40 bg-[#0F172A]' : 'border-[#1E293B] bg-[#0A0E17]'
             }`}
           >
             <div className="flex items-center gap-3 p-3">
@@ -56,7 +56,7 @@ const InteriorCatalog: React.FC<InteriorCatalogProps> = ({
                     z.id === zone.id ? { ...z, enabled: !z.enabled } : z
                   ))}
                   className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
-                    zone.enabled ? 'bg-[#7C3AED]' : 'bg-[#1E293B] border border-[#334155]'
+                    zone.enabled ? 'bg-[#3B82F6]' : 'bg-[#1E293B] border border-[#334155]'
                   }`}
                 >
                   <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
@@ -65,7 +65,7 @@ const InteriorCatalog: React.FC<InteriorCatalogProps> = ({
                 </button>
               ) : (
                 <div className="w-9 shrink-0 flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-[#7C3AED]" />
+                  <div className="w-2 h-2 rounded-full bg-[#3B82F6]" />
                 </div>
               )}
 
@@ -97,9 +97,9 @@ const InteriorCatalog: React.FC<InteriorCatalogProps> = ({
                           onClick={() => setZones(prev => prev.map(z =>
                             z.id === zone.id ? { ...z, selectedLine: line, selectedColor: line.colors[0] } : z
                           ))}
-                          className={`px-2 py-1 rounded text-[8px] font-bold uppercase tracking-wider transition-colors ${
+                          className={`px-3 py-2 sm:px-2 sm:py-1 min-h-[36px] sm:min-h-0 rounded text-[9px] sm:text-[8px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center ${
                             zone.selectedLine.id === line.id
-                              ? 'bg-[#7C3AED]/20 text-[#A78BFA] border border-[#7C3AED]/40'
+                              ? 'bg-[#3B82F6]/20 text-[#60A5FA] border border-[#3B82F6]/40'
                               : 'bg-[#1E293B] text-[#64748B] hover:text-[#94A3B8] border border-transparent'
                           }`}
                         >{line.line}</button>
@@ -110,7 +110,7 @@ const InteriorCatalog: React.FC<InteriorCatalogProps> = ({
 
                 <div className="rounded-lg overflow-hidden relative h-8 border border-[#334155] bg-[#0F172A]">
                   <div className="absolute inset-0 flex items-center px-3">
-                    <p className="text-[9px] font-bold text-[#A78BFA]">
+                    <p className="text-[9px] font-bold text-[#60A5FA]">
                       {zone.selectedLine.brand}
                     </p>
                     <span className={`text-[8px] ml-2 font-bold ${getTierBadge(zone.selectedLine).color}`}>
@@ -131,7 +131,7 @@ const InteriorCatalog: React.FC<InteriorCatalogProps> = ({
                   onMouseEnter={onColorMouseEnter}
                   onMouseLeave={onColorMouseLeave}
                   isExpanded={true}
-                  ringColor="#7C3AED"
+                  ringColor="#3B82F6"
                 />
 
                 <div className="flex items-center gap-2 pt-1 border-t border-[#1E293B]">
@@ -139,7 +139,7 @@ const InteriorCatalog: React.FC<InteriorCatalogProps> = ({
                     style={{ backgroundColor: zone.selectedColor.hex }} />
                   <span className="text-[9px] text-[#94A3B8]">
                     <strong className="text-[#E2E8F0]">{zone.selectedColor.name}</strong>
-                    {zone.selectedColor.swCode && <span className="text-[#7C3AED] ml-1">{zone.selectedColor.swCode}</span>}
+                    {zone.selectedColor.swCode && <span className="text-[#3B82F6] ml-1">{zone.selectedColor.swCode}</span>}
                     {' — '}{zone.selectedColor.hue}
                   </span>
                 </div>

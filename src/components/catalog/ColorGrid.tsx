@@ -23,7 +23,7 @@ const ColorGrid: React.FC<ColorGridProps> = ({
   if (!isExpanded) return null;
 
   return (
-    <div className="grid grid-cols-6 gap-1.5">
+    <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 sm:gap-1.5 p-1 sm:p-0">
       {colors.map((color) => {
         const isSelected = color.id === selectedColorId;
         return (
@@ -32,10 +32,10 @@ const ColorGrid: React.FC<ColorGridProps> = ({
             onClick={() => onSelect(color)}
             onMouseEnter={() => onMouseEnter(color)}
             onMouseLeave={onMouseLeave}
-            className={`group relative aspect-square rounded-md border-2 transition-all duration-150 hover:scale-110 hover:shadow-lg ${
+            className={`group relative aspect-square rounded-md border-2 transition-all duration-150 hover:scale-110 hover:shadow-xl hover:z-10 ${
               isSelected
-                ? 'border-[var(--ring)] shadow-[0_0_8px_var(--ring-glow)] scale-105'
-                : 'border-transparent hover:border-white/30'
+                ? 'border-[var(--ring)] shadow-[0_0_8px_var(--ring-glow)] scale-105 z-10'
+                : 'border-transparent hover:border-white/40'
             }`}
             style={{
               backgroundColor: color.hex,
