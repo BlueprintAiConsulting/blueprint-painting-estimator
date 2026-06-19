@@ -30,7 +30,7 @@ const RoomTypeSelector: React.FC<RoomTypeSelectorProps> = ({
             onClick={() => onSelectRoom(room.type)}
             className={`flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border transition-all ${
               isSelected
-                ? 'bg-[#5B21B6]/40 border-[#3B82F6]/60 text-[#60A5FA] shadow-[0_0_12px_rgba(124,58,237,0.2)]'
+                ? 'bg-[#3B82F6]/20 border-[#3B82F6]/60 text-[#60A5FA] shadow-[0_0_12px_rgba(59,130,246,0.3)]'
                 : 'bg-[#0A0E17] border-[#1E293B] text-[#64748B] hover:border-[#334155] hover:text-[#94A3B8]'
             }`}
           >

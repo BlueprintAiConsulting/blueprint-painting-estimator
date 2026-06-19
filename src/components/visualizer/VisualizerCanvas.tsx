@@ -253,7 +253,7 @@ const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
               </p>
             </div>
             <div className="w-48 h-1 bg-[#1E293B] rounded-full overflow-hidden mx-auto">
-              <div className="h-full bg-gradient-to-r from-[#5B21B6] to-[#3B82F6] rounded-full animate-pulse" style={{ width: '60%' }} />
+              <div className="h-full bg-gradient-to-r from-[#10B981] to-[#3B82F6] rounded-full animate-pulse" style={{ width: '60%' }} />
             </div>
           </div>
         </div>
