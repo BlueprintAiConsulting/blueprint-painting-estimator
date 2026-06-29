@@ -107,8 +107,9 @@ function validateImagePayload(base64: string, mime: string = '') {
 // Returns: { isInteriorRoom: boolean, zones: [{name, category, maskTarget}] }
 // ---------------------------------------------------------------------------
 app.post('/api/detect-room', generationLimiter, async (req, res) => {
-  let { imageBase64, mimeType, roomType = 'kitchen' } = req.body as {
-    imageBase64: string; mimeType: string; roomType: string;
+  let { imageBase64 } = req.body as { imageBase64: string };
+  const { mimeType, roomType = 'kitchen' } = req.body as {
+    mimeType: string; roomType: string;
   };
 
   if (!imageBase64) return res.status(400).json({ error: 'Missing imageBase64.' });
@@ -294,8 +295,9 @@ const PASS_CONFIGS: Record<string, {
 };
 
 app.post('/api/interior-render', generationLimiter, async (req, res) => {
-  let { imageBase64, mimeType, roomType, renderPass, zones } = req.body as {
-    imageBase64: string; mimeType: string; roomType: string;
+  let { imageBase64 } = req.body as { imageBase64: string };
+  const { mimeType, roomType, renderPass, zones } = req.body as {
+    mimeType: string; roomType: string;
     renderPass: string; zones: InteriorZonePayload[];
   };
 
@@ -363,8 +365,9 @@ ${passConfig.textureInstructions}
 // Returns: { resultImage: string }
 // ---------------------------------------------------------------------------
 app.post('/api/interior-quick-render', generationLimiter, async (req, res) => {
-  let { imageBase64, mimeType, roomType, zones } = req.body as {
-    imageBase64: string; mimeType: string; roomType: string;
+  let { imageBase64 } = req.body as { imageBase64: string };
+  const { mimeType, roomType, zones } = req.body as {
+    mimeType: string; roomType: string;
     zones: InteriorZonePayload[];
   };
   if (!imageBase64 || !zones?.length) return res.status(400).json({ error: 'Missing imageBase64 or zones.' });
@@ -431,8 +434,9 @@ interface PaintZonePayload {
 }
 
 app.post('/api/paint-visualize', generationLimiter, async (req, res) => {
-  let { imageBase64, mimeType, roomType, zones } = req.body as {
-    imageBase64: string; mimeType: string; roomType: string;
+  let { imageBase64 } = req.body as { imageBase64: string };
+  const { mimeType, roomType, zones } = req.body as {
+    mimeType: string; roomType: string;
     zones: PaintZonePayload[];
   };
   if (!imageBase64 || !zones?.length) return res.status(400).json({ error: 'Missing imageBase64 or zones.' });
@@ -519,8 +523,9 @@ app.post('/api/paint-visualize', generationLimiter, async (req, res) => {
 // POST /api/auto-mask  (adapted for interior surfaces)
 // ---------------------------------------------------------------------------
 app.post('/api/auto-mask', generationLimiter, async (req, res) => {
-  let { imageBase64, mimeType, maskTarget } = req.body as {
-    imageBase64: string; mimeType: string; maskTarget: string;
+  let { imageBase64 } = req.body as { imageBase64: string };
+  const { mimeType, maskTarget } = req.body as {
+    mimeType: string; maskTarget: string;
   };
 
   if (!imageBase64 || !maskTarget) {
@@ -573,8 +578,9 @@ CRITICAL RULES:
 // POST /api/enhance-image — AI Image Optimizer (reused from exterior)
 // ---------------------------------------------------------------------------
 app.post('/api/enhance-image', generationLimiter, async (req, res) => {
-  let { imageBase64, mimeType = 'image/jpeg' } = req.body as {
-    imageBase64: string; mimeType?: string;
+  let { imageBase64 } = req.body as { imageBase64: string };
+  const { mimeType = 'image/jpeg' } = req.body as {
+    mimeType?: string;
   };
 
   if (!imageBase64) return res.status(400).json({ error: 'imageBase64 is required' });

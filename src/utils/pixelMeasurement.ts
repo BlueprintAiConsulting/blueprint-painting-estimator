@@ -25,6 +25,6 @@ export async function countWhitePixels(base64Mask: string): Promise<number> {
       resolve(whiteCount);
     };
     img.onerror = () => reject('Failed to load mask image for pixel counting');
-    img.src = base64Mask;
+    img.src = base64Mask.startsWith('data:') ? base64Mask : `data:image/png;base64,${base64Mask}`;
   });
 }

@@ -29,6 +29,7 @@ const App: React.FC = () => {
   const [swatchPreviewHex, setSwatchPreviewHex] = useState<string | null>(null);
   const [swatchPreviewName, setSwatchPreviewName] = useState<string | null>(null);
   const [showEstimator, setShowEstimator] = useState(false);
+  const [isEstimating, setIsEstimating] = useState(false);
   const [detectedDimensions, setDetectedDimensions] = useState<RoomDimensions | null>(null);
   const [exactWallPixels, setExactWallPixels] = useState<number | null>(null);
   const [pixelsPerFoot, setPixelsPerFoot] = useState<number | null>(null);
@@ -144,8 +145,36 @@ const App: React.FC = () => {
         }),
       });
 
-      // Concurrently get the mask for pixel counting
-      const maskPromise = fetch(`${API_BASE}/api/auto-mask`, {
+      const res = await vizPromise;
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Paint visualization failed.');
+
+      setRenderPhase('done');
+      setResultImage(data.resultImage);
+      if (data.estimatedDimensions) {
+        setDetectedDimensions(data.estimatedDimensions);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      ai.setError(ai.friendlyError(msg || 'Generation failed.'));
+    } finally {
+      ai.setIsQuickGenerating(false);
+      setTimeout(() => setRenderPhase('idle'), 3000);
+    }
+  };
+
+  const handleEstimate = async () => {
+    if (!selectedImage) return;
+    setIsEstimating(true);
+    ai.setError(null);
+    try {
+      const base64 = selectedImage.includes(',') ? selectedImage.split(',')[1] : selectedImage;
+      const mime = selectedImage.includes(',')
+        ? selectedImage.split(';')[0].split(':')[1] || 'image/png'
+        : 'image/png';
+        
+      const res = await fetch(`${API_BASE}/api/auto-mask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -153,40 +182,20 @@ const App: React.FC = () => {
           mimeType: mime,
           maskTarget: 'painted interior walls',
         }),
-      }).catch(err => {
-        console.warn('Auto-mask failed:', err);
-        return null;
       });
-
-      const [res, maskRes] = await Promise.all([vizPromise, maskPromise]);
-
+      
+      if (!res.ok) throw new Error('Auto-masking failed.');
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Paint visualization failed.');
-
-      if (maskRes && maskRes.ok) {
-        const maskData = await maskRes.json();
-        if (maskData.maskBase64) {
-          try {
-            const pixelCount = await countWhitePixels(maskData.maskBase64);
-            setExactWallPixels(pixelCount);
-          } catch (e) {
-            console.error('Pixel count failed:', e);
-          }
-        }
-      }
-
-      setRenderPhase('done');
-      setResultImage(data.resultImage);
-      if (data.estimatedDimensions) {
-        setDetectedDimensions(data.estimatedDimensions);
+      if (data.maskBase64) {
+        const pixelCount = await countWhitePixels(data.maskBase64);
+        setExactWallPixels(pixelCount);
       }
       setShowEstimator(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      ai.setError(ai.friendlyError(msg || 'Generation failed.'));
+      ai.setError(msg);
     } finally {
-      ai.setIsQuickGenerating(false);
-      setTimeout(() => setRenderPhase('idle'), 3000);
+      setIsEstimating(false);
     }
   };
 
@@ -276,6 +285,21 @@ const App: React.FC = () => {
                   Colors shown are digital approximations. <span className="text-[#64748B]">Always confirm with physical SW color chips before purchasing.</span>
                 </p>
               </div>
+
+              {/* Estimator or Estimate Button */}
+              {!showEstimator && resultImage && (
+                <button
+                  onClick={handleEstimate}
+                  disabled={isEstimating}
+                  className="w-full py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-3 transition-all uppercase tracking-wider text-[12px] bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5] border border-[#6366F1]/30 hover:scale-[1.02]"
+                >
+                  {isEstimating ? (
+                    <><Loader2 className="w-5 h-5 animate-spin" /> Calculating Estimate...</>
+                  ) : (
+                    <><Sparkles className="w-5 h-5" /> Calculate Project Estimate</>
+                  )}
+                </button>
+              )}
 
               {/* Estimator — appears after visualization */}
               {showEstimator && resultImage && (

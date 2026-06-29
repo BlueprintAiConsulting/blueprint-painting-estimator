@@ -10,8 +10,9 @@ async function testText() {
       contents: { parts: [{ text: 'Say hello world' }] }
     });
     console.log('Success!', response.text);
-  } catch (error: any) {
-    console.error('Error:', error?.message || error);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('Error:', msg);
   }
 }
 
